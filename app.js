@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // API & Data Logic
     async function checkServerStatus() {
         try {
-            const res = await fetch('http://localhost:5050/status');
+            const res = await fetch('/api/status');
             if (res.ok) {
                 serverStatusTag.textContent = 'ENGINE: ONLINE';
                 serverStatusTag.style.background = 'var(--accent-green)';
@@ -464,6 +464,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         statTotal.textContent = total;
         statSuccess.textContent = `${rate}%`;
+    }
+
+    init();
+});
+`;
     }
 
     init();
