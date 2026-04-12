@@ -171,7 +171,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // API & Data Logic
   async function checkServerStatus() {
     try {
-      const res = await fetch(`/api/status?t=${Date.now()}`);
+      const res = await fetchWithFallback([
+        `/api/status?t=${Date.now()}`,
+        `/status?t=${Date.now()}`,
+      ]);
       if (res.ok) {
         serverStatusTag.textContent = "ENGINE: ONLINE";
         serverStatusTag.style.background = "var(--accent-green)";
@@ -186,6 +189,24 @@ document.addEventListener("DOMContentLoaded", () => {
       serverStatusTag.style.color = "var(--text-muted)";
       serverStatusTag.classList.remove("card-shadow");
     }
+  }
+
+  async function fetchWithFallback(urls, options) {
+    let lastError;
+
+    for (const url of urls) {
+      try {
+        const response = await fetch(url, options);
+        if (response.ok || response.status === 405) {
+          return response;
+        }
+        lastError = new Error(`Request failed with status ${response.status}`);
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw lastError || new Error("All request attempts failed");
   }
 
   function updateAPIStatus() {
@@ -386,7 +407,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       // ROUTE VIA LOCAL SERVER BY DEFAULT
-      const response = await fetch("http://localhost:5050/send", {
+      const response = await fetchWithFallback(["/api/send", "/send"], {
         method: "POST",
         headers: {
           Authorization: `Bearer ${state.apiKey}`,

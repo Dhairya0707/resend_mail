@@ -22,9 +22,51 @@ app.get('/status', (req, res) => {
         pnpm: true
     });
 });
+app.get('/api/status', (req, res) => {
+    res.json({
+        status: "online",
+        engine: "MailDispatch Node.js 1.0",
+        pnpm: true
+    });
+});
 
 // Mail Dispatch Proxy
 app.post('/send', (req, res) => {
+    const data = JSON.stringify(req.body);
+    const authHeader = req.headers.authorization;
+
+    const options = {
+        hostname: 'api.resend.com',
+        port: 443,
+        path: '/emails',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': data.length,
+            'Authorization': authHeader
+        }
+    };
+
+    const proxyReq = https.request(options, (proxyRes) => {
+        let responseData = '';
+        proxyRes.on('data', (chunk) => {
+            responseData += chunk;
+        });
+        proxyRes.on('end', () => {
+            res.status(proxyRes.statusCode).send(responseData);
+            console.log(`[${new Date().toISOString()}] Dispatch: ${proxyRes.statusCode}`);
+        });
+    });
+
+    proxyReq.on('error', (e) => {
+        console.error(`[${new Date().toISOString()}] Error: ${e.message}`);
+        res.status(500).json({ error: e.message });
+    });
+
+    proxyReq.write(data);
+    proxyReq.end();
+});
+app.post('/api/send', (req, res) => {
     const data = JSON.stringify(req.body);
     const authHeader = req.headers.authorization;
 
