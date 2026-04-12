@@ -40,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const newIdentityEmail = document.getElementById('new-identity-email');
     const saveIdentityBtn = document.getElementById('save-identity-btn');
     const cancelIdentityBtn = document.getElementById('cancel-identity-btn');
-    const seedTestBtn = document.getElementById('seed-test-btn');
 
     // Stats Elements
     const statTotal = document.getElementById('stat-total');
